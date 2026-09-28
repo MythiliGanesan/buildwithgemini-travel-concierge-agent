@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Concierge AI</title>
+<!-- Google Fonts & Icons -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+<style>
+  :root {
+    --accent: #0d9488;
+    --accent-dark: #0f766e;
+    --accent-light: #ccfbf1;
+    --bg: #f8fafc;
+    --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #f0fdfa 50%, #e0f2fe 100%);
+    --card-bg: #ffffff;
+    --log-bg: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border: #e2e8f0;
+    --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  }
+
+  body.dark-mode {
+    --accent: #14b8a6;
+    --accent-dark: #0d9488;
+    --accent-light: rgba(20, 184, 166, 0.15);
+    --bg: #0f172a;
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    --card-bg: #1e293b;
+    --log-bg: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  /* App Shell */
+  .app-container {
+    width: 100%;
+    max-width: 880px;
+    height: 90vh;
+    max-height: 850px;
+    background: var(--card-bg);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: #ffffff;
+    padding: 1.1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .avatar-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .header-info h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .header-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .header-btn {
+    background: rgba(255, 255, 255, 0.18);
+    border: none;
+    color: #ffffff;
+    padding: 0.45rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: background 0.2s ease;
+    font-family: inherit;
+  }
+
+  .header-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Log area */
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    background: var(--log-bg);
+    transition: background 0.3s ease;
+  }
+
+  /* Message Rows */
+  .msg-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-row.user { flex-direction: row-reverse; }
+
+  .user-avatar, .agent-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+  }
+
+  .agent-avatar {
+    background: var(--accent-light);
+    color: var(--accent-dark);
+  }
+
+  .user-avatar {
+    background: var(--text-primary);
+    color: var(--card-bg);
+    font-size: 0.9rem;
+  }
+
+  .bubble {
+    padding: 0.85rem 1.1rem;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 82%;
+    word-break: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .msg-row.agent .bubble {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+  }
+
+  .msg-row.user .bubble {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: #ffffff;
+    border-top-right-radius: 4px;
+  }
+
+  .bubble.rich {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  /* Animated Typing Indicator */
+  .typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.3rem 0.2rem;
+  }
+
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--accent);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+  }
+
+  .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1.1); opacity: 1; }
+  }
+
+  /* Category Filter Chips */
+  .examples-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem 0.25rem;
+    background: var(--card-bg);
+    overflow-x: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .chip {
+    background: var(--log-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: inherit;
+  }
+
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+    transform: translateY(-1px);
+  }
+
+  /* Input Form */
+  form {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.25rem;
+    background: var(--card-bg);
+    transition: background 0.3s ease;
+  }
+
+  input {
+    flex: 1;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+    background: var(--log-bg);
+    color: var(--text-primary);
+  }
+
+  input:focus {
+    background: var(--card-bg);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  }
+
+  button.send-btn {
+    padding: 0.85rem 1.4rem;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.2);
+  }
+
+  button.send-btn:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(13, 148, 136, 0.3);
+  }
+
+  /* --- A2UI component styles --- */
+  .a2card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.1rem;
+    background: var(--card-bg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    max-width: 100%;
+  }
+
+  .a2card + .a2card, .a2col > .a2card { margin-top: 0.6rem; }
+  .a2col { display: flex; flex-direction: column; gap: 0.5rem; }
+  .a2row { display: flex; flex-direction: row; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+  .a2row.between { justify-content: space-between; }
+  .a2text { margin: 0; line-height: 1.5; color: var(--text-primary); }
+  .a2text.a2-h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+  .a2text.a2-h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+  .a2text.a2-h3 { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); }
+  .a2text.a2-h4 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+  .a2text.a2-caption { font-size: 0.85rem; color: var(--text-secondary); }
+  .a2divider { border: none; border-top: 1px solid var(--border); margin: 0.5rem 0; width: 100%; }
+  
+  .a2img, .chat-image {
+    max-width: 100%;
+    border-radius: 12px;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .a2img:hover, .chat-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+
+  .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-size: 1.25rem; line-height: 1; vertical-align: middle; color: var(--accent); }
+
+  /* Lightbox Modal */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1.5rem;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal-img {
+    max-width: 90%;
+    max-height: 85%;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    object-fit: contain;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+  }
+
+  .modal-close:hover { background: rgba(255,255,255,0.35); }
+
+  /* Formatting elements inside text bubbles */
+  .bubble p { margin: 0 0 0.5rem 0; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul { margin: 0.4rem 0; padding-left: 1.2rem; }
+  .bubble li { margin-bottom: 0.25rem; }
+  .bubble a { color: var(--accent); text-decoration: underline; }
+  .msg-row.user .bubble a { color: #ffffff; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Lightbox Modal -->
+  <div id="modal-overlay" class="modal-overlay">
+    <button id="modal-close" class="modal-close">✕</button>
+    <img id="modal-img" class="modal-img" src="" alt="Enlarged view">
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-brand">
+      <div class="avatar-badge">✈️</div>
+      <div class="header-info">
+        <h1>Travel Concierge</h1>
+        <p>AI Concierge & Itinerary Assistant</p>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button id="theme-toggle" class="header-btn" title="Toggle Light/Dark Theme">
+        <span id="theme-icon">🌙</span> Dark
+      </button>
+      <button id="new-chat-btn" class="header-btn" title="Start New Session">
+        <span>🗑️</span> New Chat
+      </button>
+    </div>
+  </header>
+
+  <!-- Chat Log -->
+  <div id="log"></div>
+
+  <!-- Category Filter Chips -->
+  <div class="examples-bar">
+    <button type="button" class="chip" data-prompt="Show all available travel destinations">🌴 All Destinations</button>
+    <button type="button" class="chip" data-prompt="Find beach and tropical vacation spots">🏝️ Beach & Nature</button>
+    <button type="button" class="chip" data-prompt="Recommend historical and cultural destinations">⛩️ Culture & Temples</button>
+    <button type="button" class="chip" data-prompt="Find destinations with daily cost under $160">💰 Budget < $160/day</button>
+  </div>
+
+  <!-- Input Form -->
+  <form id="form">
+    <input id="input" placeholder="Ask about destinations, budgets, weather, or images…" autocomplete="off" autofocus>
+    <button class="send-btn" type="submit">
+      <span>Send</span>
+      <span class="material-symbols-outlined" style="font-size:1.1rem; color:#fff;">send</span>
+    </button>
+  </form>
+</div>
+
+<script>
+const log = document.getElementById("log");
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+const modalOverlay = document.getElementById("modal-overlay");
+const modalImg = document.getElementById("modal-img");
+const modalClose = document.getElementById("modal-close");
+const themeToggle = document.getElementById("theme-toggle");
+const themeIcon = document.getElementById("theme-icon");
+const newChatBtn = document.getElementById("new-chat-btn");
+
+// Persistent session user ID
+let currentUserId = localStorage.getItem("travel_concierge_user_id") || ("user-" + Math.random().toString(36).substring(2, 9));
+localStorage.setItem("travel_concierge_user_id", currentUserId);
+
+/* --- Light/Dark Theme Switcher --- */
+function initTheme() {
+  const isDark = localStorage.getItem("theme") === "dark";
+  if (isDark) {
+    document.body.classList.add("dark-mode");
+    themeToggle.innerHTML = `<span>☀️</span> Light`;
+  }
+}
+initTheme();
+
+themeToggle.addEventListener("click", () => {
+  const isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  themeToggle.innerHTML = isDark ? `<span>☀️</span> Light` : `<span>🌙</span> Dark`;
+});
+
+/* --- Image Lightbox Modal --- */
+function openLightbox(src) {
+  modalImg.src = src;
+  modalOverlay.classList.add("active");
+}
+modalClose.addEventListener("click", () => modalOverlay.classList.remove("active"));
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove("active");
+});
+
+/* --- Clickable Filter Chips --- */
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    input.value = chip.dataset.prompt;
+    form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event("submit", { cancelable: true }));
+  });
+});
+
+/* --- New Chat / Reset Session --- */
+newChatBtn.addEventListener("click", () => {
+  currentUserId = "user-" + Math.random().toString(36).substring(2, 9);
+  localStorage.setItem("travel_concierge_user_id", currentUserId);
+  log.innerHTML = "";
+  addWelcomeMessage();
+});
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function bubble(who) {
+  const row = el("div", "msg-row " + who);
+  const avatar = el("div", who === "user" ? "user-avatar" : "agent-avatar", who === "user" ? "👤" : "✈️");
+  const b = el("div", "bubble");
+  row.appendChild(avatar);
+  row.appendChild(b);
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+  return b;
+}
+
+function showTypingIndicator() {
+  const row = el("div", "msg-row agent");
+  const avatar = el("div", "agent-avatar", "✈️");
+  const b = el("div", "bubble");
+  const typing = el("div", "typing-indicator");
+  typing.appendChild(el("div", "typing-dot"));
+  typing.appendChild(el("div", "typing-dot"));
+  typing.appendChild(el("div", "typing-dot"));
+  b.appendChild(typing);
+  row.appendChild(avatar);
+  row.appendChild(b);
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+  return row;
+}
+
+/* --- Mini Markdown Parser --- */
+function parseMarkdown(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Bold & Italic
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+  // Auto-render Image URLs
+  html = html.replace(/(https?:\/\/[^\s<]+\.(?:png|jpg|jpeg|gif|webp))/gi, '<img src="$1" class="chat-image" alt="Generated Image">');
+
+  // Links
+  html = html.replace(/\[(.*?)\]\((https?:\/\/.*?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  // Bullet points
+  const lines = html.split("\n");
+  let inList = false;
+  let result = [];
+
+  for (let line of lines) {
+    const listMatch = line.match(/^[\*\-]\s+(.*)/);
+    if (listMatch) {
+      if (!inList) { inList = true; result.push("<ul>"); }
+      result.push(`<li>${listMatch[1]}</li>`);
+    } else {
+      if (inList) { inList = false; result.push("</ul>"); }
+      result.push(line ? `<p>${line}</p>` : "");
+    }
+  }
+  if (inList) result.push("</ul>");
+  return result.join("");
+}
+
+/* --- A2UI Mini Renderer --- */
+function boundStr(v) {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v.literalString === "string") return v.literalString;
+  return "";
+}
+
+function childIds(props) {
+  const ids = [];
+  if (props && typeof props.child === "string") ids.push(props.child);
+  const ch = props && props.children;
+  if (ch && Array.isArray(ch.explicitList)) for (const c of ch.explicitList) if (typeof c === "string") ids.push(c);
+  return ids;
+}
+
+function iconName(n) {
+  return String(n || "").replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/\s+/g, "_").toLowerCase();
+}
+
+function buildNode(id, comps, seen) {
+  if (!id || seen.has(id)) return null;
+  seen.add(id);
+  const spec = comps[id];
+  if (!spec || typeof spec !== "object") return null;
+  const type = Object.keys(spec)[0];
+  const props = spec[type] || {};
+  const kids = () => childIds(props).map(cid => buildNode(cid, comps, seen)).filter(Boolean);
+
+  switch (type) {
+    case "Card": {
+      const d = el("div", "a2card"); kids().forEach(n => d.appendChild(n)); return d;
+    }
+    case "Column":
+    case "List": {
+      const horizontal = type === "List" && props.direction === "horizontal";
+      const d = el("div", horizontal ? "a2row" : "a2col"); kids().forEach(n => d.appendChild(n)); return d;
+    }
+    case "Row": {
+      const d = el("div", "a2row" + (props.distribution === "spaceBetween" ? " between" : ""));
+      kids().forEach(n => d.appendChild(n)); return d;
+    }
+    case "Text": {
+      const t = el("div", "a2text");
+      const hint = String(props.usageHint || "body").toLowerCase();
+      if (["h1", "h2", "h3", "h4", "h5", "h6"].includes(hint)) t.classList.add("a2-" + hint);
+      else if (hint === "caption") t.classList.add("a2-caption");
+      t.innerHTML = parseMarkdown(boundStr(props.text));
+      return t;
+    }
+    case "Divider":
+      return el("hr", "a2divider");
+    case "Image": {
+      const src = boundStr(props.url || props.src);
+      if (!/^https?:\/\//i.test(src)) return null;
+      const img = el("img", "a2img");
+      img.src = src;
+      img.alt = boundStr(props.alt) || "";
+      img.addEventListener("click", () => openLightbox(src));
+      return img;
+    }
+    case "Icon": {
+      const s = el("span", "material-symbols-outlined"); s.textContent = iconName(boundStr(props.name) || props.name); return s;
+    }
+    default:
+      return null;
+  }
+}
+
+function renderSurface(messages, container) {
+  const comps = {};
+  const roots = [];
+  for (const m of messages) {
+    if (m.beginRendering && typeof m.beginRendering.root === "string") roots.push(m.beginRendering.root);
+    const su = m.surfaceUpdate;
+    if (su && Array.isArray(su.components)) for (const c of su.components) if (c && c.id && c.component) comps[c.id] = c.component;
+  }
+  let rootIds = roots.filter(r => comps[r]);
+  if (rootIds.length === 0) {
+    const referenced = new Set();
+    for (const id in comps) { const spec = comps[id]; childIds(spec[Object.keys(spec)[0]] || {}).forEach(c => referenced.add(c)); }
+    rootIds = Object.keys(comps).filter(id => !referenced.has(id));
+  }
+  let drew = false;
+  for (const rid of rootIds) { const node = buildNode(rid, comps, new Set()); if (node) { container.appendChild(node); drew = true; } }
+  return drew;
+}
+
+function renderReply(b, parts) {
+  b.textContent = "";
+  const texts = parts.filter(p => p && (p.kind === "text" || (!p.kind && p.text))).map(p => p.text || "");
+  const a2ui = parts.filter(p => p && p.kind === "a2ui" && p.data).map(p => p.data);
+
+  const textStr = texts.join("\n").trim();
+  if (textStr) {
+    b.innerHTML = parseMarkdown(textStr);
+    b.querySelectorAll("img").forEach(img => {
+      img.classList.add("chat-image");
+      img.addEventListener("click", () => openLightbox(img.src));
+    });
+  }
+
+  if (a2ui.length) {
+    b.classList.add("rich");
+    if (!renderSurface(a2ui, b)) b.innerHTML = parseMarkdown(flattenText(a2ui) || "(no card content)");
+  }
+  if (!b.childNodes.length) b.textContent = "(no response)";
+  log.scrollTop = log.scrollHeight;
+}
+
+function flattenText(messages) {
+  const out = [];
+  for (const m of messages) {
+    const su = m.surfaceUpdate;
+    if (su && Array.isArray(su.components)) for (const c of su.components) if (c && c.component && c.component.Text) out.push(boundStr(c.component.Text.text));
+  }
+  return out.join("\n").trim();
+}
+
+form.addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const userB = bubble("user");
+  userB.textContent = text;
+  input.value = "";
+
+  const typingRow = showTypingIndicator();
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, user_id: currentUserId })
+    });
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error(`Server returned non-JSON (HTTP ${res.status}). ${raw.slice(0, 300)}`); }
+
+    log.removeChild(typingRow);
+    const agentB = bubble("agent");
+    renderReply(agentB, data.parts || []);
+  } catch (e) {
+    if (log.contains(typingRow)) log.removeChild(typingRow);
+    const agentB = bubble("agent");
+    agentB.textContent = "Error: " + e.message;
+  }
+});
+
+function addWelcomeMessage() {
+  const b = bubble("agent");
+  b.innerHTML = parseMarkdown("Welcome to **Travel Concierge**! ✈️\n\nHow can I help you discover destinations, check weather, or plan your itinerary today?");
+}
+
+window.addEventListener("DOMContentLoaded", addWelcomeMessage);
+</script>
+</body>
+</html>
